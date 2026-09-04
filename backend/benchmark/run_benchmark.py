@@ -21,78 +21,13 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from app.models.schemas import Decision, Dependency, DependencyStatus, Entity, Evidence  # noqa: E402
 from app.storage.bigquery_client import get_bigquery_client  # noqa: E402
+from app.storage.queries import fetch_project_graph_data  # noqa: E402
 from app.verification.rules import RuleContext, run_verification  # noqa: E402
 from benchmark.metrics import BenchmarkReport, ScenarioOutcome  # noqa: E402
 from scripts.scenario_definitions import SCENARIOS  # noqa: E402
 
 DOCS_DIR = Path(__file__).resolve().parents[2] / "docs"
-
-
-def fetch_scenario_graph_data(scenario_id: str):
-    bq = get_bigquery_client()
-
-    entity_rows = bq.query(
-        f"SELECT entity_id, name, type, source_artifact FROM `{bq.table_ref('entities')}` "
-        f"WHERE scenario_id = @scenario_id",
-        params=[_param("scenario_id", scenario_id)],
-    )
-    dependency_rows = bq.query(
-        f"SELECT dependency_id, source_entity_id, target_entity_id, dependency_type, status "
-        f"FROM `{bq.table_ref('dependencies')}` WHERE scenario_id = @scenario_id AND status = 'verified'",
-        params=[_param("scenario_id", scenario_id)],
-    )
-    dependency_ids = [d["dependency_id"] for d in dependency_rows]
-    evidence_rows = []
-    if dependency_ids:
-        evidence_rows = bq.query(
-            f"SELECT evidence_id, dependency_id, artifact_uri, artifact_type, quoted_snippet, extracted_by "
-            f"FROM `{bq.table_ref('evidence')}` WHERE dependency_id IN UNNEST(@dependency_ids)",
-            params=[_array_param("dependency_ids", dependency_ids)],
-        )
-    wave_rows = bq.query(
-        f"SELECT entity_id, wave_number FROM `{bq.table_ref('migration_waves')}` WHERE scenario_id = @scenario_id",
-        params=[_param("scenario_id", scenario_id)],
-    )
-
-    entities = [Entity(entity_id=r["entity_id"], name=r["name"], type=r["type"], source_artifact=r.get("source_artifact")) for r in entity_rows]
-    dependencies = [
-        Dependency(
-            dependency_id=r["dependency_id"],
-            source_entity_id=r["source_entity_id"],
-            target_entity_id=r["target_entity_id"],
-            dependency_type=r["dependency_type"],
-            status=DependencyStatus(r["status"]),
-        )
-        for r in dependency_rows
-    ]
-    evidence_by_dependency: dict[str, list[Evidence]] = {}
-    for r in evidence_rows:
-        ev = Evidence(
-            evidence_id=r["evidence_id"],
-            dependency_id=r["dependency_id"],
-            artifact_uri=r["artifact_uri"],
-            artifact_type=r["artifact_type"],
-            quoted_snippet=r["quoted_snippet"],
-            extracted_by=r["extracted_by"],
-        )
-        evidence_by_dependency.setdefault(ev.dependency_id, []).append(ev)
-    wave_of = {r["entity_id"]: r["wave_number"] for r in wave_rows}
-
-    return entities, dependencies, evidence_by_dependency, wave_of
-
-
-def _param(name: str, value: str):
-    from google.cloud import bigquery
-
-    return bigquery.ScalarQueryParameter(name, "STRING", value)
-
-
-def _array_param(name: str, values: list[str]):
-    from google.cloud import bigquery
-
-    return bigquery.ArrayQueryParameter(name, "STRING", values)
 
 
 def persist_result(scenario_id: str, target_wave: int, result) -> None:
@@ -118,7 +53,7 @@ def main() -> None:
     outcomes: list[ScenarioOutcome] = []
 
     for scenario in SCENARIOS:
-        entities, dependencies, evidence_by_dependency, wave_of = fetch_scenario_graph_data(scenario.scenario_id)
+        entities, dependencies, evidence_by_dependency, wave_of = fetch_project_graph_data(scenario.scenario_id)
         graph = DependencyGraph.build(entities, dependencies)
         ctx = RuleContext(
             graph=graph,

@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     dashboard_password: str = ""
 
     environment: str = "local"
+    frontend_origin: str = ""
 
     @property
     def is_production(self) -> bool:
