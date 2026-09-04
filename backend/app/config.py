@@ -13,7 +13,10 @@ class Settings(BaseSettings):
     gcs_synthetic_bucket: str = "migrationguard-sv-synthetic-data"
 
     gemini_api_key: str = ""
-    gemini_model: str = "gemini-2.0-flash"
+    gemini_model: str = "gemini-2.5-flash"
+    # "vertexai" uses the project's service account + billing (no API key needed).
+    # "api_key" uses a Generative Language API key from AI Studio.
+    gemini_backend: str = "vertexai"
 
     dashboard_username: str = "admin"
     dashboard_password: str = ""

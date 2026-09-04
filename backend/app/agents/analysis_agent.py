@@ -27,17 +27,5 @@ def run_analysis(result: RuleEngineResult, client: GeminiClient | None = None) -
         .replace("{reasons}", reasons_text)
         .replace("{blast_radius}", blast_radius_text)
     )
-    # Analysis agent returns plain text, not JSON -- use the raw model directly.
-    import time
-
-    start = time.monotonic()
-    response = client.model.generate_content(prompt)
-    client._log_call(
-        agent_name="analysis_agent",
-        scenario_id=None,
-        latency_ms=int((time.monotonic() - start) * 1000),
-        success=True,
-        error_message=None,
-        usage=getattr(response, "usage_metadata", None),
-    )
-    return response.text.strip()
+    # Analysis agent returns plain text, not JSON.
+    return client.generate_text(prompt, agent_name="analysis_agent")

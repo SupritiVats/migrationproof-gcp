@@ -1,6 +1,12 @@
-"""Thin wrapper around google-generativeai enforcing JSON-only output, with
-retry-on-invalid-JSON and call logging to BigQuery (llm_call_log) for cost
-tracking / auditability.
+"""Thin wrapper around the google-genai SDK.
+
+Supports two backends via the `GEMINI_BACKEND` env var:
+- "vertexai" (default): Gemini via Vertex AI, authenticated with the project's
+  service account and billed to the GCP project (works with the $300 trial).
+- "api_key": Generative Language API with a GEMINI_API_KEY from AI Studio.
+
+Enforces JSON-only output for agent calls, retries once on invalid JSON, and
+logs every call to BigQuery (llm_call_log) for cost tracking / auditability.
 """
 from __future__ import annotations
 
@@ -9,7 +15,8 @@ import time
 import uuid
 from typing import Any
 
-import google.generativeai as genai
+from google import genai
+from google.genai import types as genai_types
 
 from app.config import get_settings
 
@@ -21,34 +28,40 @@ class GeminiCallError(RuntimeError):
 class GeminiClient:
     def __init__(self) -> None:
         settings = get_settings()
-        if not settings.gemini_api_key:
-            raise GeminiCallError(
-                "GEMINI_API_KEY is not set. Add it to .env (local) or Secret Manager (prod) "
-                "before running any agent that calls Gemini."
-            )
-        genai.configure(api_key=settings.gemini_api_key)
         self.model_name = settings.gemini_model
-        self.model = genai.GenerativeModel(self.model_name)
+        if settings.gemini_backend == "api_key":
+            if not settings.gemini_api_key:
+                raise GeminiCallError(
+                    "GEMINI_API_KEY is not set. Add it to .env (local) or Secret Manager (prod), "
+                    "or set GEMINI_BACKEND=vertexai to use the project's service account instead."
+                )
+            self.client = genai.Client(api_key=settings.gemini_api_key)
+        else:  # vertexai
+            self.client = genai.Client(
+                vertexai=True,
+                project=settings.gcp_project_id,
+                location=settings.gcp_region,
+            )
 
     def generate_json(self, prompt: str, agent_name: str, scenario_id: str | None = None, max_retries: int = 2) -> dict[str, Any]:
-        """Call Gemini expecting a strict JSON object response. Retries once on
+        """Call Gemini expecting a strict JSON object response. Retries on
         invalid JSON by re-prompting with the parse error appended."""
         last_error: Exception | None = None
         attempt_prompt = prompt
 
-        for attempt in range(max_retries + 1):
+        for _ in range(max_retries + 1):
             start = time.monotonic()
             success = False
             error_message = None
             usage = None
             try:
-                response = self.model.generate_content(
-                    attempt_prompt,
-                    generation_config=genai.types.GenerationConfig(response_mime_type="application/json"),
+                response = self.client.models.generate_content(
+                    model=self.model_name,
+                    contents=attempt_prompt,
+                    config=genai_types.GenerateContentConfig(response_mime_type="application/json"),
                 )
-                text = response.text
                 usage = getattr(response, "usage_metadata", None)
-                parsed = json.loads(text)
+                parsed = json.loads(response.text)
                 success = True
                 return parsed
             except (json.JSONDecodeError, ValueError) as exc:
@@ -69,6 +82,26 @@ class GeminiClient:
                 )
 
         raise GeminiCallError(f"Gemini did not return valid JSON after {max_retries + 1} attempts: {last_error}")
+
+    def generate_text(self, prompt: str, agent_name: str, scenario_id: str | None = None) -> str:
+        """Plain-text generation (Analysis agent narrative)."""
+        start = time.monotonic()
+        try:
+            response = self.client.models.generate_content(model=self.model_name, contents=prompt)
+            usage = getattr(response, "usage_metadata", None)
+            self._log_call(
+                agent_name=agent_name, scenario_id=scenario_id,
+                latency_ms=int((time.monotonic() - start) * 1000),
+                success=True, error_message=None, usage=usage,
+            )
+            return response.text.strip()
+        except Exception as exc:
+            self._log_call(
+                agent_name=agent_name, scenario_id=scenario_id,
+                latency_ms=int((time.monotonic() - start) * 1000),
+                success=False, error_message=str(exc), usage=None,
+            )
+            raise GeminiCallError(str(exc)) from exc
 
     def _log_call(self, agent_name: str, scenario_id: str | None, latency_ms: int, success: bool, error_message: str | None, usage) -> None:
         try:

@@ -653,9 +653,9 @@ Updated as work progresses — only checked after each Definition of Done is act
 - [x] Phase 1 — GCP project setup (`migrationguard-sv`: APIs, SA + IAM, buckets, dataset)
 - [x] Phase 2 — BigQuery schema (7 tables live in `migrationproof` dataset)
 - [x] Phase 3 — Synthetic dataset + ground truth (8 scenarios generated, uploaded to GCS, loaded to BigQuery)
-- [x] Phase 4 — Discovery + Evidence agents (implemented + unit-tested; **needs `GEMINI_API_KEY` to run live**)
+- [x] Phase 4 — Discovery + Evidence agents (implemented + unit-tested; **live via Vertex AI** — verified end-to-end: 28 entities, 18 evidence-backed dependencies extracted from real artifacts)
 - [x] Phase 5 — Deterministic verification engine (rules + graph + blast radius + confidence; 9/9 unit tests passing)
-- [x] Phase 6 — Analysis agent (implemented; **needs `GEMINI_API_KEY` for the narrative**)
+- [x] Phase 6 — Analysis agent (implemented; **live via Vertex AI** — produces the narrative on every `/verify` call)
 - [x] Phase 7 — Benchmark (8/8 scenarios pass: 100% accuracy, 0% unsafe-approval — against seeded reference data, see `docs/BENCHMARK_RESULTS.md` note)
 - [x] Phase 8 — FastAPI backend (14/14 tests; verified live via curl on Cloud Run)
 - [x] Phase 9 — React frontend (login + project + waves + result screens; production build passing)
@@ -669,6 +669,13 @@ Updated as work progresses — only checked after each Definition of Done is act
 
 ### Remaining before submission
 
-- [ ] Add `GEMINI_API_KEY` to Secret Manager + backend env to enable the live Discovery/Evidence/Analysis agents, then re-run the benchmark end-to-end (see `docs/DEMO_SCRIPT.md` → "To enable the live LLM layer").
 - [ ] Set a Cloud Billing budget alert on the trial account.
 - [ ] Update the Patchamomma form fields to match what was actually built.
+
+### Gemini backend
+
+The LLM layer runs on **Vertex AI** (`GEMINI_BACKEND=vertexai`, model
+`gemini-2.5-flash`), authenticated with the project's service account and
+billed to the GCP project (your $300 trial) — no AI Studio API key needed.
+To use an AI Studio API key instead, set `GEMINI_BACKEND=api_key` and
+`GEMINI_API_KEY` (Secret Manager `gemini-api-key` in prod).

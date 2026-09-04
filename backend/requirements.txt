@@ -5,7 +5,7 @@ pydantic-settings==2.7.1
 google-cloud-bigquery==3.27.0
 google-cloud-storage==2.19.0
 google-cloud-secret-manager==2.22.1
-google-generativeai==0.8.3
+google-genai==1.29.0
 python-multipart==0.0.20
 itsdangerous==2.2.0
 pytest==8.3.4

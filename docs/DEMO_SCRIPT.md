@@ -59,30 +59,24 @@ cutover mistake that takes systems down.
 
 ---
 
-## What is *not* yet wired up (be honest if asked)
+## The LLM layer is live
 
-- **Discovery / Evidence agents** are implemented and unit-tested, but the
-  *live* Gemini calls require a `GEMINI_API_KEY` that was not configured at
-  demo time. The benchmark currently runs against seeded reference data that
-  represents what those agents are designed to produce from the same raw
-  artifacts (which are already uploaded to GCS). The `/verify` endpoint
-  degrades gracefully: without a key, `narrative` is simply `null` while the
-  deterministic decision, reasons, and evidence remain fully functional.
-- The **Analysis agent** narrative therefore won't appear in the demo unless a
-  Gemini key is added to Secret Manager and the backend env updated.
+The Gemini/ADK agents run on **Vertex AI** (service-account auth, billed to
+the project's trial credits — no AI Studio key needed). Verified end-to-end:
 
-## To enable the live LLM layer later
+- The **Analysis agent** produces the narrative on every `/verify` call —
+  you should see a plain-English "Explanation" card on the result screen.
+- The **Discovery + Evidence agents** work live: "Run discovery" on a project
+  with uploaded artifacts will extract entities/dependencies into BigQuery
+  and quote evidence for each.
+- **Known limitation:** the benchmark's 100% numbers come from hand-seeded
+  reference data (the ground truth the agents are *supposed* to reproduce).
+  A true end-to-end benchmark (raw artifacts → Gemini extraction →
+  verification) will show lower accuracy — that's the honest, expected gap
+  between extraction recall and decision correctness.
 
-```bash
-echo -n "<GEMINI_API_KEY>" | gcloud secrets create gemini-api-key \
-  --data-file=- --project=migrationguard-sv
-gcloud secrets add-iam-policy-binding gemini-api-key \
-  --member="serviceAccount:migrationproof-backend@migrationguard-sv.iam.gserviceaccount.com" \
-  --role="roles/secretmanager.secretAccessor" --project=migrationguard-sv
+## LLM backend config
 
-gcloud run services update migrationproof-backend \
-  --region us-central1 --project=migrationguard-sv \
-  --set-secrets="GEMINI_API_KEY=gemini-api-key:latest"
-```
-Then re-run `python -m benchmark.run_benchmark` for true end-to-end numbers
-(Gemini extraction → deterministic verification → ground truth).
+The deployed backend uses `GEMINI_BACKEND=vertexai` + `GEMINI_MODEL=gemini-2.5-flash`
+(Vertex AI, service-account auth, project billing). To use an AI Studio API
+key instead, set `GEMINI_BACKEND=api_key` and a `GEMINI_API_KEY` secret.
