@@ -1,0 +1,33 @@
+## Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+
+## Node / frontend
+node_modules/
+dist/
+.vite/
+
+## Env / secrets
+.env
+.env.*
+!.env.example
+*.key.json
+*credentials*.json
+service-account*.json
+.secrets/
+
+## OS / editor
+.DS_Store
+*.swp
+
+## Logs
+*.log
+
+## Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup

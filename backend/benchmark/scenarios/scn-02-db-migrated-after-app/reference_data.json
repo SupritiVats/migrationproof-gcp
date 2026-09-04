@@ -1,0 +1,401 @@
+{
+  "scenario_id": "scn-02-db-migrated-after-app",
+  "description": "checkout-api (Wave 1) depends on mysql-prod, but mysql-prod is scheduled for Wave 3.",
+  "target_wave": 1,
+  "expected_decision": "BLOCK",
+  "failure_type": "cross_wave_dependency",
+  "entities": [
+    {
+      "entity_id": "frontend",
+      "name": "frontend",
+      "type": "service",
+      "scenario_id": "scn-02-db-migrated-after-app"
+    },
+    {
+      "entity_id": "load-balancer",
+      "name": "load-balancer",
+      "type": "service",
+      "scenario_id": "scn-02-db-migrated-after-app"
+    },
+    {
+      "entity_id": "checkout-api",
+      "name": "checkout-api",
+      "type": "service",
+      "scenario_id": "scn-02-db-migrated-after-app"
+    },
+    {
+      "entity_id": "order-service",
+      "name": "order-service",
+      "type": "service",
+      "scenario_id": "scn-02-db-migrated-after-app"
+    },
+    {
+      "entity_id": "payment-service",
+      "name": "payment-service",
+      "type": "service",
+      "scenario_id": "scn-02-db-migrated-after-app"
+    },
+    {
+      "entity_id": "mysql-prod",
+      "name": "mysql-prod",
+      "type": "database",
+      "scenario_id": "scn-02-db-migrated-after-app"
+    },
+    {
+      "entity_id": "redis",
+      "name": "redis",
+      "type": "database",
+      "scenario_id": "scn-02-db-migrated-after-app"
+    },
+    {
+      "entity_id": "kafka",
+      "name": "kafka",
+      "type": "service",
+      "scenario_id": "scn-02-db-migrated-after-app"
+    },
+    {
+      "entity_id": "monitoring",
+      "name": "monitoring",
+      "type": "service",
+      "scenario_id": "scn-02-db-migrated-after-app"
+    },
+    {
+      "entity_id": "external-payment-api",
+      "name": "external-payment-api",
+      "type": "external_api",
+      "scenario_id": "scn-02-db-migrated-after-app"
+    }
+  ],
+  "dependencies": [
+    {
+      "dependency_id": "scn-02-db-migrated-after-app::dep::load-balancer->frontend",
+      "source_entity_id": "load-balancer",
+      "target_entity_id": "frontend",
+      "dependency_type": "routes_to",
+      "status": "verified",
+      "scenario_id": "scn-02-db-migrated-after-app"
+    },
+    {
+      "dependency_id": "scn-02-db-migrated-after-app::dep::frontend->checkout-api",
+      "source_entity_id": "frontend",
+      "target_entity_id": "checkout-api",
+      "dependency_type": "calls_api",
+      "status": "verified",
+      "scenario_id": "scn-02-db-migrated-after-app"
+    },
+    {
+      "dependency_id": "scn-02-db-migrated-after-app::dep::checkout-api->mysql-prod",
+      "source_entity_id": "checkout-api",
+      "target_entity_id": "mysql-prod",
+      "dependency_type": "reads_writes",
+      "status": "verified",
+      "scenario_id": "scn-02-db-migrated-after-app"
+    },
+    {
+      "dependency_id": "scn-02-db-migrated-after-app::dep::checkout-api->redis",
+      "source_entity_id": "checkout-api",
+      "target_entity_id": "redis",
+      "dependency_type": "reads_writes",
+      "status": "verified",
+      "scenario_id": "scn-02-db-migrated-after-app"
+    },
+    {
+      "dependency_id": "scn-02-db-migrated-after-app::dep::checkout-api->payment-service",
+      "source_entity_id": "checkout-api",
+      "target_entity_id": "payment-service",
+      "dependency_type": "calls_api",
+      "status": "verified",
+      "scenario_id": "scn-02-db-migrated-after-app"
+    },
+    {
+      "dependency_id": "scn-02-db-migrated-after-app::dep::order-service->checkout-api",
+      "source_entity_id": "order-service",
+      "target_entity_id": "checkout-api",
+      "dependency_type": "calls_api",
+      "status": "verified",
+      "scenario_id": "scn-02-db-migrated-after-app"
+    },
+    {
+      "dependency_id": "scn-02-db-migrated-after-app::dep::order-service->kafka",
+      "source_entity_id": "order-service",
+      "target_entity_id": "kafka",
+      "dependency_type": "publishes_to",
+      "status": "verified",
+      "scenario_id": "scn-02-db-migrated-after-app"
+    },
+    {
+      "dependency_id": "scn-02-db-migrated-after-app::dep::payment-service->external-payment-api",
+      "source_entity_id": "payment-service",
+      "target_entity_id": "external-payment-api",
+      "dependency_type": "calls_api",
+      "status": "verified",
+      "scenario_id": "scn-02-db-migrated-after-app"
+    }
+  ],
+  "evidence": [
+    {
+      "evidence_id": "scn-02-db-migrated-after-app::dep::load-balancer->frontend::ev0",
+      "dependency_id": "scn-02-db-migrated-after-app::dep::load-balancer->frontend",
+      "artifact_uri": "gs://SYNTHETIC_BUCKET/scn-02-db-migrated-after-app/application_config.txt",
+      "artifact_type": "application_config",
+      "quoted_snippet": "LOAD_BALANCER_TARGET=frontend.internal",
+      "extracted_by": "synthetic_generator"
+    },
+    {
+      "evidence_id": "scn-02-db-migrated-after-app::dep::load-balancer->frontend::ev1",
+      "dependency_id": "scn-02-db-migrated-after-app::dep::load-balancer->frontend",
+      "artifact_uri": "gs://SYNTHETIC_BUCKET/scn-02-db-migrated-after-app/network_connection.txt",
+      "artifact_type": "network_connection",
+      "quoted_snippet": "load-balancer -> frontend:443 observed in flow logs",
+      "extracted_by": "synthetic_generator"
+    },
+    {
+      "evidence_id": "scn-02-db-migrated-after-app::dep::frontend->checkout-api::ev0",
+      "dependency_id": "scn-02-db-migrated-after-app::dep::frontend->checkout-api",
+      "artifact_uri": "gs://SYNTHETIC_BUCKET/scn-02-db-migrated-after-app/application_config.txt",
+      "artifact_type": "application_config",
+      "quoted_snippet": "FRONTEND_TARGET=checkout-api.internal",
+      "extracted_by": "synthetic_generator"
+    },
+    {
+      "evidence_id": "scn-02-db-migrated-after-app::dep::frontend->checkout-api::ev1",
+      "dependency_id": "scn-02-db-migrated-after-app::dep::frontend->checkout-api",
+      "artifact_uri": "gs://SYNTHETIC_BUCKET/scn-02-db-migrated-after-app/network_connection.txt",
+      "artifact_type": "network_connection",
+      "quoted_snippet": "frontend -> checkout-api:443 observed in flow logs",
+      "extracted_by": "synthetic_generator"
+    },
+    {
+      "evidence_id": "scn-02-db-migrated-after-app::dep::checkout-api->mysql-prod::ev0",
+      "dependency_id": "scn-02-db-migrated-after-app::dep::checkout-api->mysql-prod",
+      "artifact_uri": "gs://SYNTHETIC_BUCKET/scn-02-db-migrated-after-app/application_config.txt",
+      "artifact_type": "application_config",
+      "quoted_snippet": "CHECKOUT_API_TARGET=mysql-prod.internal",
+      "extracted_by": "synthetic_generator"
+    },
+    {
+      "evidence_id": "scn-02-db-migrated-after-app::dep::checkout-api->mysql-prod::ev1",
+      "dependency_id": "scn-02-db-migrated-after-app::dep::checkout-api->mysql-prod",
+      "artifact_uri": "gs://SYNTHETIC_BUCKET/scn-02-db-migrated-after-app/network_connection.txt",
+      "artifact_type": "network_connection",
+      "quoted_snippet": "checkout-api -> mysql-prod:443 observed in flow logs",
+      "extracted_by": "synthetic_generator"
+    },
+    {
+      "evidence_id": "scn-02-db-migrated-after-app::dep::checkout-api->redis::ev0",
+      "dependency_id": "scn-02-db-migrated-after-app::dep::checkout-api->redis",
+      "artifact_uri": "gs://SYNTHETIC_BUCKET/scn-02-db-migrated-after-app/application_config.txt",
+      "artifact_type": "application_config",
+      "quoted_snippet": "CHECKOUT_API_TARGET=redis.internal",
+      "extracted_by": "synthetic_generator"
+    },
+    {
+      "evidence_id": "scn-02-db-migrated-after-app::dep::checkout-api->redis::ev1",
+      "dependency_id": "scn-02-db-migrated-after-app::dep::checkout-api->redis",
+      "artifact_uri": "gs://SYNTHETIC_BUCKET/scn-02-db-migrated-after-app/network_connection.txt",
+      "artifact_type": "network_connection",
+      "quoted_snippet": "checkout-api -> redis:443 observed in flow logs",
+      "extracted_by": "synthetic_generator"
+    },
+    {
+      "evidence_id": "scn-02-db-migrated-after-app::dep::checkout-api->payment-service::ev0",
+      "dependency_id": "scn-02-db-migrated-after-app::dep::checkout-api->payment-service",
+      "artifact_uri": "gs://SYNTHETIC_BUCKET/scn-02-db-migrated-after-app/application_config.txt",
+      "artifact_type": "application_config",
+      "quoted_snippet": "CHECKOUT_API_TARGET=payment-service.internal",
+      "extracted_by": "synthetic_generator"
+    },
+    {
+      "evidence_id": "scn-02-db-migrated-after-app::dep::checkout-api->payment-service::ev1",
+      "dependency_id": "scn-02-db-migrated-after-app::dep::checkout-api->payment-service",
+      "artifact_uri": "gs://SYNTHETIC_BUCKET/scn-02-db-migrated-after-app/network_connection.txt",
+      "artifact_type": "network_connection",
+      "quoted_snippet": "checkout-api -> payment-service:443 observed in flow logs",
+      "extracted_by": "synthetic_generator"
+    },
+    {
+      "evidence_id": "scn-02-db-migrated-after-app::dep::order-service->checkout-api::ev0",
+      "dependency_id": "scn-02-db-migrated-after-app::dep::order-service->checkout-api",
+      "artifact_uri": "gs://SYNTHETIC_BUCKET/scn-02-db-migrated-after-app/application_config.txt",
+      "artifact_type": "application_config",
+      "quoted_snippet": "ORDER_SERVICE_TARGET=checkout-api.internal",
+      "extracted_by": "synthetic_generator"
+    },
+    {
+      "evidence_id": "scn-02-db-migrated-after-app::dep::order-service->checkout-api::ev1",
+      "dependency_id": "scn-02-db-migrated-after-app::dep::order-service->checkout-api",
+      "artifact_uri": "gs://SYNTHETIC_BUCKET/scn-02-db-migrated-after-app/network_connection.txt",
+      "artifact_type": "network_connection",
+      "quoted_snippet": "order-service -> checkout-api:443 observed in flow logs",
+      "extracted_by": "synthetic_generator"
+    },
+    {
+      "evidence_id": "scn-02-db-migrated-after-app::dep::order-service->kafka::ev0",
+      "dependency_id": "scn-02-db-migrated-after-app::dep::order-service->kafka",
+      "artifact_uri": "gs://SYNTHETIC_BUCKET/scn-02-db-migrated-after-app/application_config.txt",
+      "artifact_type": "application_config",
+      "quoted_snippet": "ORDER_SERVICE_TARGET=kafka.internal",
+      "extracted_by": "synthetic_generator"
+    },
+    {
+      "evidence_id": "scn-02-db-migrated-after-app::dep::order-service->kafka::ev1",
+      "dependency_id": "scn-02-db-migrated-after-app::dep::order-service->kafka",
+      "artifact_uri": "gs://SYNTHETIC_BUCKET/scn-02-db-migrated-after-app/network_connection.txt",
+      "artifact_type": "network_connection",
+      "quoted_snippet": "order-service -> kafka:443 observed in flow logs",
+      "extracted_by": "synthetic_generator"
+    },
+    {
+      "evidence_id": "scn-02-db-migrated-after-app::dep::payment-service->external-payment-api::ev0",
+      "dependency_id": "scn-02-db-migrated-after-app::dep::payment-service->external-payment-api",
+      "artifact_uri": "gs://SYNTHETIC_BUCKET/scn-02-db-migrated-after-app/application_config.txt",
+      "artifact_type": "application_config",
+      "quoted_snippet": "PAYMENT_SERVICE_TARGET=external-payment-api.internal",
+      "extracted_by": "synthetic_generator"
+    },
+    {
+      "evidence_id": "scn-02-db-migrated-after-app::dep::payment-service->external-payment-api::ev1",
+      "dependency_id": "scn-02-db-migrated-after-app::dep::payment-service->external-payment-api",
+      "artifact_uri": "gs://SYNTHETIC_BUCKET/scn-02-db-migrated-after-app/network_connection.txt",
+      "artifact_type": "network_connection",
+      "quoted_snippet": "payment-service -> external-payment-api:443 observed in flow logs",
+      "extracted_by": "synthetic_generator"
+    }
+  ],
+  "migration_waves": [
+    {
+      "wave_id": "scn-02-db-migrated-after-app::wave::load-balancer",
+      "wave_number": 1,
+      "entity_id": "load-balancer",
+      "scenario_id": "scn-02-db-migrated-after-app"
+    },
+    {
+      "wave_id": "scn-02-db-migrated-after-app::wave::frontend",
+      "wave_number": 1,
+      "entity_id": "frontend",
+      "scenario_id": "scn-02-db-migrated-after-app"
+    },
+    {
+      "wave_id": "scn-02-db-migrated-after-app::wave::checkout-api",
+      "wave_number": 1,
+      "entity_id": "checkout-api",
+      "scenario_id": "scn-02-db-migrated-after-app"
+    },
+    {
+      "wave_id": "scn-02-db-migrated-after-app::wave::order-service",
+      "wave_number": 1,
+      "entity_id": "order-service",
+      "scenario_id": "scn-02-db-migrated-after-app"
+    },
+    {
+      "wave_id": "scn-02-db-migrated-after-app::wave::payment-service",
+      "wave_number": 1,
+      "entity_id": "payment-service",
+      "scenario_id": "scn-02-db-migrated-after-app"
+    },
+    {
+      "wave_id": "scn-02-db-migrated-after-app::wave::mysql-prod",
+      "wave_number": 3,
+      "entity_id": "mysql-prod",
+      "scenario_id": "scn-02-db-migrated-after-app"
+    },
+    {
+      "wave_id": "scn-02-db-migrated-after-app::wave::redis",
+      "wave_number": 1,
+      "entity_id": "redis",
+      "scenario_id": "scn-02-db-migrated-after-app"
+    },
+    {
+      "wave_id": "scn-02-db-migrated-after-app::wave::kafka",
+      "wave_number": 1,
+      "entity_id": "kafka",
+      "scenario_id": "scn-02-db-migrated-after-app"
+    },
+    {
+      "wave_id": "scn-02-db-migrated-after-app::wave::monitoring",
+      "wave_number": 2,
+      "entity_id": "monitoring",
+      "scenario_id": "scn-02-db-migrated-after-app"
+    },
+    {
+      "wave_id": "scn-02-db-migrated-after-app::wave::external-payment-api",
+      "wave_number": 1,
+      "entity_id": "external-payment-api",
+      "scenario_id": "scn-02-db-migrated-after-app"
+    }
+  ],
+  "ground_truth": [
+    {
+      "scenario_id": "scn-02-db-migrated-after-app",
+      "entity_id_a": "load-balancer",
+      "entity_id_b": "frontend",
+      "is_dependency": true,
+      "expected_wave_conflict": true,
+      "failure_type": "cross_wave_dependency",
+      "expected_decision": "BLOCK"
+    },
+    {
+      "scenario_id": "scn-02-db-migrated-after-app",
+      "entity_id_a": "frontend",
+      "entity_id_b": "checkout-api",
+      "is_dependency": true,
+      "expected_wave_conflict": true,
+      "failure_type": "cross_wave_dependency",
+      "expected_decision": "BLOCK"
+    },
+    {
+      "scenario_id": "scn-02-db-migrated-after-app",
+      "entity_id_a": "checkout-api",
+      "entity_id_b": "mysql-prod",
+      "is_dependency": true,
+      "expected_wave_conflict": true,
+      "failure_type": "cross_wave_dependency",
+      "expected_decision": "BLOCK"
+    },
+    {
+      "scenario_id": "scn-02-db-migrated-after-app",
+      "entity_id_a": "checkout-api",
+      "entity_id_b": "redis",
+      "is_dependency": true,
+      "expected_wave_conflict": true,
+      "failure_type": "cross_wave_dependency",
+      "expected_decision": "BLOCK"
+    },
+    {
+      "scenario_id": "scn-02-db-migrated-after-app",
+      "entity_id_a": "checkout-api",
+      "entity_id_b": "payment-service",
+      "is_dependency": true,
+      "expected_wave_conflict": true,
+      "failure_type": "cross_wave_dependency",
+      "expected_decision": "BLOCK"
+    },
+    {
+      "scenario_id": "scn-02-db-migrated-after-app",
+      "entity_id_a": "order-service",
+      "entity_id_b": "checkout-api",
+      "is_dependency": true,
+      "expected_wave_conflict": true,
+      "failure_type": "cross_wave_dependency",
+      "expected_decision": "BLOCK"
+    },
+    {
+      "scenario_id": "scn-02-db-migrated-after-app",
+      "entity_id_a": "order-service",
+      "entity_id_b": "kafka",
+      "is_dependency": true,
+      "expected_wave_conflict": true,
+      "failure_type": "cross_wave_dependency",
+      "expected_decision": "BLOCK"
+    },
+    {
+      "scenario_id": "scn-02-db-migrated-after-app",
+      "entity_id_a": "payment-service",
+      "entity_id_b": "external-payment-api",
+      "is_dependency": true,
+      "expected_wave_conflict": true,
+      "failure_type": "cross_wave_dependency",
+      "expected_decision": "BLOCK"
+    }
+  ]
+}

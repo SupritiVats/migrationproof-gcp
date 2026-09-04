@@ -1,0 +1,11 @@
+vm_name,entity_id,wave,status
+vm-load-balancer,load-balancer,1,running
+vm-frontend,frontend,1,running
+vm-checkout-api,checkout-api,1,running
+vm-order-service,order-service,1,running
+vm-payment-service,payment-service,1,running
+vm-mysql-prod,mysql-prod,3,running
+vm-redis,redis,1,running
+vm-kafka,kafka,1,running
+vm-monitoring,monitoring,2,running
+vm-external-payment-api,external-payment-api,1,running

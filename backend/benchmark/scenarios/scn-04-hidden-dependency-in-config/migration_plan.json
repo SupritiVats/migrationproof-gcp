@@ -1,0 +1,16 @@
+{
+  "scenario_id": "scn-04-hidden-dependency-in-config",
+  "target_wave": 1,
+  "waves": {
+    "load-balancer": 1,
+    "frontend": 1,
+    "checkout-api": 1,
+    "order-service": 1,
+    "payment-service": 1,
+    "mysql-prod": 1,
+    "redis": 1,
+    "kafka": 1,
+    "monitoring": 2,
+    "external-payment-api": 1
+  }
+}

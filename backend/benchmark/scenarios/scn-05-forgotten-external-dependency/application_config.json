@@ -1,0 +1,7 @@
+{
+  "LOAD_BALANCER_TARGET": "frontend.internal",
+  "FRONTEND_TARGET": "checkout-api.internal",
+  "CHECKOUT_API_TARGET": "payment-service.internal",
+  "ORDER_SERVICE_TARGET": "kafka.internal",
+  "PAYMENT_SERVICE_TARGET": "external-payment-api.internal"
+}

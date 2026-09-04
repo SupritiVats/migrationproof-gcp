@@ -1,0 +1,11 @@
+entity_id,type,owner_team
+frontend,service,platform-eng
+load-balancer,service,platform-eng
+checkout-api,service,platform-eng
+order-service,service,platform-eng
+payment-service,service,platform-eng
+mysql-prod,database,platform-eng
+redis,database,platform-eng
+kafka,service,platform-eng
+monitoring,service,platform-eng
+external-payment-api,external_api,platform-eng

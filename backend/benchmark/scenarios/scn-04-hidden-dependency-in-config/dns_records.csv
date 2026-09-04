@@ -1,0 +1,3 @@
+record,target,note
+checkout.retailco.com,load-balancer.internal,active
+mysql-prod.internal,10.20.0.14,active
