@@ -494,9 +494,9 @@ Endpoints (all under `backend/app/api/`):
 - `POST /verify` — run verification engine for a given migration plan/wave
 - `GET /verify/{result_id}` — fetch a verification result
 - `GET /waves/{project_id}` — fetch migration plan/waves
-- `GET /healthz` — liveness/readiness
+- `GET /health` — liveness/readiness
 
-All endpoints behind the fixed-credential auth middleware except `/healthz`. CORS restricted to the deployed frontend origin (and `localhost` in dev).
+All endpoints behind the fixed-credential auth middleware except `/health`. CORS restricted to the deployed frontend origin (and `localhost` in dev).
 
 **Definition of done:** `pytest backend/tests` passes; `curl` against each endpoint (documented in `docs/ARCHITECTURE.md`) returns expected status codes locally.
 
@@ -550,7 +550,7 @@ cd backend && python -m benchmark.run_benchmark
 
 - No OAuth/user accounts for the MVP.
 - The frontend shows a login screen requiring `DASHBOARD_USERNAME` / `DASHBOARD_PASSWORD`.
-- The backend validates a session (signed cookie or simple bearer token issued on login) on all non-`/healthz` routes.
+- The backend validates a session (signed cookie or simple bearer token issued on login) on all non-`/health` routes.
 - Credentials are set via environment variables / Secret Manager — **never hardcoded**, never logged, never committed.
 
 ---
@@ -600,7 +600,7 @@ gcloud run deploy migrationproof-frontend \
 
 **Deployment verification checklist:**
 
-- [ ] `curl https://<backend-url>/healthz` returns `200`
+- [ ] `curl https://<backend-url>/health` returns `200`
 - [ ] Frontend loads and shows the login screen
 - [ ] Logging in with the fixed credentials succeeds
 - [ ] Uploading a synthetic scenario's artifacts succeeds
@@ -642,21 +642,33 @@ gcloud run deploy migrationproof-frontend \
 | Cloud Run deploy succeeds but 502s | Container not listening on `$PORT` | Ensure Uvicorn binds to `0.0.0.0:$PORT` (Cloud Run injects `PORT`) |
 | CORS errors in browser console | Frontend origin not whitelisted on backend | Update backend CORS allowed origins with the deployed frontend URL |
 | Verification engine disagrees with ground truth | Rule bug, or upstream extraction produced no/duplicate evidence | Check `evidence` table for the dependency before blaming the rule engine |
+| `/healthz` returns a generic Google HTML 404 (not your app's JSON) on the deployed Cloud Run URL | `/healthz` is a reserved path intercepted at the Google Frontend/Cloud Run edge and never forwarded to your container | Use a different path for the health endpoint (this project uses `/health`, not `/healthz`) |
 
 ---
 
 ## 16. Status
 
-This section should be updated as work progresses (not by the coding agent inventing progress — only after each Definition of Done is actually met).
+Updated as work progresses — only checked after each Definition of Done is actually met.
 
-- [ ] Phase 1 — GCP project setup
-- [ ] Phase 2 — BigQuery schema
-- [ ] Phase 3 — Synthetic dataset + ground truth
-- [ ] Phase 4 — Discovery + Evidence agents
-- [ ] Phase 5 — Deterministic verification engine
-- [ ] Phase 6 — Analysis agent
-- [ ] Phase 7 — Benchmark
-- [ ] Phase 8 — FastAPI backend
-- [ ] Phase 9 — React frontend
-- [ ] Phase 10 — Cloud Run deployment
-- [ ] Phase 11 — Demo scenario + docs
+- [x] Phase 1 — GCP project setup (`migrationguard-sv`: APIs, SA + IAM, buckets, dataset)
+- [x] Phase 2 — BigQuery schema (7 tables live in `migrationproof` dataset)
+- [x] Phase 3 — Synthetic dataset + ground truth (8 scenarios generated, uploaded to GCS, loaded to BigQuery)
+- [x] Phase 4 — Discovery + Evidence agents (implemented + unit-tested; **needs `GEMINI_API_KEY` to run live**)
+- [x] Phase 5 — Deterministic verification engine (rules + graph + blast radius + confidence; 9/9 unit tests passing)
+- [x] Phase 6 — Analysis agent (implemented; **needs `GEMINI_API_KEY` for the narrative**)
+- [x] Phase 7 — Benchmark (8/8 scenarios pass: 100% accuracy, 0% unsafe-approval — against seeded reference data, see `docs/BENCHMARK_RESULTS.md` note)
+- [x] Phase 8 — FastAPI backend (14/14 tests; verified live via curl on Cloud Run)
+- [x] Phase 9 — React frontend (login + project + waves + result screens; production build passing)
+- [x] Phase 10 — Cloud Run deployment (backend + frontend live; all 7 checklist items pass, incl. CORS)
+- [x] Phase 11 — Demo scenario + docs (`docs/ARCHITECTURE.md`, `docs/DEMO_SCRIPT.md`)
+
+### Deployed URLs
+
+- **Frontend (submit this):** https://migrationproof-frontend-509319730686.us-central1.run.app
+- **Backend:** https://migrationproof-backend-509319730686.us-central1.run.app
+
+### Remaining before submission
+
+- [ ] Add `GEMINI_API_KEY` to Secret Manager + backend env to enable the live Discovery/Evidence/Analysis agents, then re-run the benchmark end-to-end (see `docs/DEMO_SCRIPT.md` → "To enable the live LLM layer").
+- [ ] Set a Cloud Billing budget alert on the trial account.
+- [ ] Update the Patchamomma form fields to match what was actually built.

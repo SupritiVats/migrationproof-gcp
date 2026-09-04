@@ -19,6 +19,7 @@ dist/
 *credentials*.json
 service-account*.json
 .secrets/
+.secrets_dashboard_password_DO_NOT_COMMIT.txt
 
 ## OS / editor
 .DS_Store

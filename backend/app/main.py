@@ -30,6 +30,6 @@ app.include_router(inspection_routes.router)
 app.include_router(verify_routes.router)
 
 
-@app.get("/healthz")
-def healthz() -> dict:
+@app.get("/health")
+def health() -> dict:
     return {"status": "ok", "environment": settings.environment}
