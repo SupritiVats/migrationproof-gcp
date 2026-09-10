@@ -25,10 +25,18 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="app-shell" style={{ maxWidth: 420, paddingTop: 80 }}>
+    <div className="app-shell" style={{ maxWidth: 420, paddingTop: 100 }}>
       <div className="card">
-        <h1>🔒 MigrationProof</h1>
-        <p style={{ color: "#8b98a5" }}>Verify your migration before you cut over.</p>
+        <h1 style={{
+          fontSize: 26,
+          background: "linear-gradient(135deg, #ffffff, #9fb4cc)",
+          WebkitBackgroundClip: "text",
+          backgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+        }}>
+          🔒 MigrationProof
+        </h1>
+        <p style={{ color: "var(--muted)" }}>Verify your migration before you cut over.</p>
         <form onSubmit={handleSubmit}>
           <input
             placeholder="Username"
@@ -43,8 +51,8 @@ export default function LoginPage() {
             onChange={(e) => setPassword(e.target.value)}
           />
           {error && <p className="error-text">{error}</p>}
-          <button type="submit" disabled={loading}>
-            {loading ? "Signing in..." : "Sign in"}
+          <button type="submit" disabled={loading} style={{ width: "100%", justifyContent: "center" }}>
+            {loading ? "Signing in..." : "🔓 Sign in"}
           </button>
         </form>
       </div>

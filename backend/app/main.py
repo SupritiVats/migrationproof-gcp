@@ -15,12 +15,19 @@ allowed_origins = ["http://localhost:5173", "http://127.0.0.1:5173"]
 if settings.frontend_origin:
     allowed_origins.append(settings.frontend_origin)
 
+# Local dev only: also allow any localhost/127.0.0.1 port (e.g. a browser
+# preview proxy running on a random port) so local testing doesn't need CORS
+# tweaks every time. Never applied in production.
+cors_kwargs = {"allow_origins": allowed_origins}
+if not settings.is_production:
+    cors_kwargs = {"allow_origin_regex": r"http://(localhost|127\.0\.0\.1)(:\d+)?"}
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    **cors_kwargs,
 )
 
 app.include_router(auth_routes.router)

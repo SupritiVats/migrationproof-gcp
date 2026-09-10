@@ -6,23 +6,24 @@ export default function NavBar() {
   const location = useLocation();
 
   function linkStyle(path: string): React.CSSProperties {
+    const active = location.pathname === path;
     return {
-      color: location.pathname === path ? "#e6edf3" : "#8b98a5",
-      fontWeight: location.pathname === path ? 700 : 500,
-      textDecoration: "none",
-      marginRight: 20,
+      color: active ? "#e6edf3" : "#8b98a5",
+      fontWeight: active ? 700 : 500,
+      borderBottomColor: active ? "#4a90ff" : "transparent",
+      marginRight: 24,
     };
   }
 
   return (
     <div className="top-nav">
-      <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
-        <h1 style={{ margin: 0, fontSize: 20 }}>🔒 MigrationProof</h1>
+      <div className="top-nav-brand">
+        <h1>🔒 MigrationProof</h1>
         <nav>
-          <Link to="/project" style={linkStyle("/project")}>
+          <Link to="/project" className="nav-link" style={linkStyle("/project")}>
             Project
           </Link>
-          <Link to="/about" style={linkStyle("/about")}>
+          <Link to="/about" className="nav-link" style={linkStyle("/about")}>
             How to use / About
           </Link>
         </nav>
