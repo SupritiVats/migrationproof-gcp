@@ -18,3 +18,17 @@ async def upload_artifact(project_id: str, file: UploadFile) -> dict:
 def list_artifacts(project_id: str) -> dict:
     gcs = get_gcs_client()
     return {"project_id": project_id, "artifacts": gcs.list_artifacts(project_id)}
+
+
+@router.delete("/{project_id}/{filename}")
+def delete_artifact(project_id: str, filename: str) -> dict:
+    gcs = get_gcs_client()
+    gcs.delete_artifact(project_id, filename)
+    return {"project_id": project_id, "filename": filename, "deleted": True}
+
+
+@router.delete("/{project_id}")
+def delete_all_artifacts(project_id: str) -> dict:
+    gcs = get_gcs_client()
+    count = gcs.delete_all_artifacts(project_id)
+    return {"project_id": project_id, "deleted_count": count}

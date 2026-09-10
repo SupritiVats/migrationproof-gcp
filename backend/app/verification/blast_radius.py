@@ -1,6 +1,13 @@
 """Blast-radius computation: what breaks downstream if an entity is disrupted."""
-from app.models.schemas import BlastRadius
+from dataclasses import dataclass
+
 from app.verification.graph import DependencyGraph
+
+
+@dataclass
+class BlastRadius:
+    root_entity_id: str
+    affected_entity_ids: list[str]
 
 
 def compute_blast_radius(graph: DependencyGraph, entity_id: str) -> BlastRadius:

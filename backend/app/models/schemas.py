@@ -68,11 +68,6 @@ class VerificationReason(BaseModel):
     related_dependency_ids: list[str] = Field(default_factory=list)
 
 
-class BlastRadius(BaseModel):
-    root_entity_id: str
-    affected_entity_ids: list[str] = Field(default_factory=list)
-
-
 class VerificationResult(BaseModel):
     result_id: str
     scenario_id: str
@@ -80,6 +75,9 @@ class VerificationResult(BaseModel):
     decision: Decision
     reasons: list[VerificationReason] = Field(default_factory=list)
     confidence: float
-    blast_radius: Optional[BlastRadius] = None
+    # entity_id -> list of downstream entities that would be affected if this
+    # entity is disrupted (transitive dependents). Keyed by every entity in
+    # the wave being verified.
+    blast_radius: dict[str, list[str]] = Field(default_factory=dict)
     created_at: Optional[datetime] = None
     narrative: Optional[str] = None

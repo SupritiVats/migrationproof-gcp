@@ -13,6 +13,7 @@ Rules:
 - `type` must be one of: service, database, vm, dns, external_api.
 - Only propose a dependency if you can point to a specific artifact excerpt that supports it.
 - Do NOT invent entities or dependencies with no basis in the provided artifacts.
+- A service being *hosted on* a VM (e.g. `vm-checkout-api` in an inventory row) is infrastructure placement, NOT a runtime dependency. Do not emit `service -> vm-*` dependencies. Only emit dependencies that represent actual data/runtime coupling (API calls, DB reads/writes, message passing, DNS resolution to a service endpoint).
 - If you are unsure whether something is a real dependency, include it with `dependency_type: "candidate"` rather than omitting it -- the Evidence Agent and deterministic verification engine will handle uncertainty, you must not silently drop signal.
 
 Output schema:

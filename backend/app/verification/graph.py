@@ -11,9 +11,11 @@ from app.models.schemas import Dependency, DependencyStatus, Entity
 class DependencyGraph:
     entities: dict[str, Entity] = field(default_factory=dict)
     dependencies: dict[str, Dependency] = field(default_factory=dict)
-    # adjacency: source depends on target -> edges[source] = [target, ...]
-    edges: dict[str, list[str]] = field(default_factory=lambda: defaultdict(list))
-    reverse_edges: dict[str, list[str]] = field(default_factory=lambda: defaultdict(list))
+    # adjacency: source depends on target -> edges[source] = {target, ...}
+    # Sets, not lists: seeded + agent-extracted rows can describe the same
+    # pair, and a dependency edge must never fire its rules more than once.
+    edges: dict[str, set[str]] = field(default_factory=lambda: defaultdict(set))
+    reverse_edges: dict[str, set[str]] = field(default_factory=lambda: defaultdict(set))
 
     @classmethod
     def build(cls, entities: list[Entity], dependencies: list[Dependency]) -> "DependencyGraph":
@@ -24,8 +26,8 @@ class DependencyGraph:
             if d.status != DependencyStatus.VERIFIED:
                 continue
             graph.dependencies[d.dependency_id] = d
-            graph.edges[d.source_entity_id].append(d.target_entity_id)
-            graph.reverse_edges[d.target_entity_id].append(d.source_entity_id)
+            graph.edges[d.source_entity_id].add(d.target_entity_id)
+            graph.reverse_edges[d.target_entity_id].add(d.source_entity_id)
         return graph
 
     def dependencies_of(self, entity_id: str) -> list[str]:

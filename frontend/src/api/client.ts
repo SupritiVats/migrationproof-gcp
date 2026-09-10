@@ -47,6 +47,16 @@ export function listArtifacts(projectId: string) {
   return request<{ project_id: string; artifacts: string[] }>(`/artifacts/${projectId}`);
 }
 
+export function deleteArtifact(projectId: string, filename: string) {
+  return request<{ deleted: boolean }>(`/artifacts/${projectId}/${encodeURIComponent(filename)}`, {
+    method: "DELETE",
+  });
+}
+
+export function deleteAllArtifacts(projectId: string) {
+  return request<{ deleted_count: number }>(`/artifacts/${projectId}`, { method: "DELETE" });
+}
+
 export function runDiscovery(projectId: string) {
   return request<Record<string, unknown>>(`/discovery/run/${projectId}`, { method: "POST" });
 }
@@ -69,6 +79,7 @@ export interface VerificationResult {
   decision: "ALLOW" | "BLOCK";
   reasons: VerificationReason[];
   confidence: number;
+  blast_radius: Record<string, string[]>;
   narrative: string | null;
 }
 

@@ -40,3 +40,13 @@ def test_protected_route_accepts_valid_session():
     # 200 or 500 depending on GCS credentials in this environment; the point of
     # this test is that auth itself doesn't block it with a 401.
     assert response.status_code != 401
+
+
+def test_delete_artifact_requires_session():
+    response = client.delete("/artifacts/some-project/some-file.csv")
+    assert response.status_code == 401
+
+
+def test_delete_all_artifacts_requires_session():
+    response = client.delete("/artifacts/some-project")
+    assert response.status_code == 401

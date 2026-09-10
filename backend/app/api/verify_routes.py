@@ -73,7 +73,7 @@ def verify(payload: VerifyRequest) -> VerificationResult:
         decision=result.decision,
         reasons=result.reasons,
         confidence=result.confidence,
-        blast_radius=None,
+        blast_radius=result.blast_radius_by_entity,
         narrative=narrative,
     )
 

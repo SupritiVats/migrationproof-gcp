@@ -29,6 +29,20 @@ class GCSClient:
         bucket = self.client.bucket(bucket_name)
         return bucket.blob(blob_path).download_as_text()
 
+    def delete_artifact(self, project_id: str, filename: str) -> None:
+        bucket = self.client.bucket(self.artifact_bucket_name)
+        blob_path = f"{project_id}/{filename}"
+        blob = bucket.blob(blob_path)
+        if blob.exists():
+            blob.delete()
+
+    def delete_all_artifacts(self, project_id: str) -> int:
+        bucket = self.client.bucket(self.artifact_bucket_name)
+        blobs = list(bucket.list_blobs(prefix=f"{project_id}/"))
+        for blob in blobs:
+            blob.delete()
+        return len(blobs)
+
     def upload_synthetic(self, scenario_id: str, filename: str, content: bytes) -> str:
         bucket = self.client.bucket(self.synthetic_bucket_name)
         blob_path = f"{scenario_id}/{filename}"

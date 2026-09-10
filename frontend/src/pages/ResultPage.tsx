@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { verify, VerificationResult } from "../api/client";
-import { useAuth } from "../auth/AuthContext";
+import NavBar from "../components/NavBar";
 
 export default function ResultPage() {
-  const { logout } = useAuth();
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const projectId = params.get("project") || "";
@@ -29,12 +28,7 @@ export default function ResultPage() {
 
   return (
     <div className="app-shell">
-      <div className="top-nav">
-        <h1>🔒 MigrationProof</h1>
-        <button className="secondary" onClick={logout}>
-          Sign out
-        </button>
-      </div>
+      <NavBar />
 
       <button className="secondary" onClick={() => navigate("/project")} style={{ marginBottom: 16 }}>
         ← Back to project
@@ -73,6 +67,32 @@ export default function ResultPage() {
                 <p style={{ margin: "6px 0 0" }}>{reason.message}</p>
               </div>
             ))}
+
+            {result.blast_radius && Object.keys(result.blast_radius).length > 0 && (
+              <>
+                <h3 style={{ marginTop: 20 }}>Predicted blast radius</h3>
+                <p style={{ color: "#8b98a5", fontSize: 13 }}>
+                  If an entity below is disrupted by this migration, these downstream services would
+                  be affected too.
+                </p>
+                {Object.entries(result.blast_radius).map(([entity, affected]) => (
+                  <div key={entity} className="card" style={{ background: "#0b0f14", padding: 14, marginBottom: 8 }}>
+                    <strong>{entity}</strong>
+                    <div style={{ marginTop: 6 }}>
+                      {affected.length === 0 ? (
+                        <span style={{ color: "#8b98a5", fontSize: 13 }}>No downstream dependents.</span>
+                      ) : (
+                        affected.map((eid) => (
+                          <span className="badge" key={eid}>
+                            {eid}
+                          </span>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </>
+            )}
           </>
         )}
       </div>

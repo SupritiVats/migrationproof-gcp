@@ -33,7 +33,12 @@ def run_discovery_pipeline(project_id: str) -> dict:
     bq = get_bigquery_client()
     client = GeminiClient()
 
-    artifact_uris = gcs.list_artifacts(project_id)
+    artifact_uris = [
+        uri for uri in gcs.list_artifacts(project_id)
+        # reference_data.json is the synthetic generator's ground-truth file,
+        # not a real infrastructure artifact -- never feed it to the agents.
+        if not uri.endswith("reference_data.json")
+    ]
     if not artifact_uris:
         raise ValueError(f"No artifacts found for project '{project_id}'. Upload artifacts first.")
 
