@@ -28,6 +28,13 @@ service-account*.json
 ## Logs
 *.log
 
+## Demo / screen recordings
+*.mp4
+*.webm
+*.mov
+*.mkv
+*.avi
+
 ## Terraform
 .terraform/
 *.tfstate
